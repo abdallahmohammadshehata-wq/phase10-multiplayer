@@ -15,6 +15,7 @@ function phase10SocketPlugin(): Plugin {
 }
 
 export default defineConfig({
+  base: './',
   plugins: [react(), phase10SocketPlugin()],
   server: {
     host: '0.0.0.0',
