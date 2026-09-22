@@ -1,0 +1,61 @@
+{
+  "name": "Phase 10 Ultimate — لعبة فاز 10 الاحترافية",
+  "short_name": "Phase 10 / فاز 10",
+  "description": "لعبة كروت فاز 10 الجماعية أونلاين وبوتات الذكاء الاصطناعي مع دعم كامل للهواتف والأجهزة اللوحية (Multiplayer & AI Bots)",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1320",
+  "theme_color": "#ef4444",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["games", "entertainment", "card games"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "اللعب ضد البوتات (Solo Bots)",
+      "short_name": "Solo / فردي",
+      "description": "بدء مباراة سريعة ضد بوتات الذكاء الاصطناعي",
+      "url": "/?mode=solo",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "إنشاء غرفة جماعية (Create Room)",
+      "short_name": "Create / إنشاء",
+      "description": "إنشاء غرفة لعب أونلاين ومشاركة الرابط",
+      "url": "/?mode=create",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
