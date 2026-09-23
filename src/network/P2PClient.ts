@@ -35,13 +35,39 @@ export class P2PClient {
     activeTurnSessionId: number;
   };
 
-  // Client connection to host
   private hostConnection: DataConnection | null = null;
+  private broadcastChannel: BroadcastChannel | null = null;
 
   private listeners: Map<P2PEventType, Array<(data: any) => void>> = new Map();
 
   constructor() {
     localStorage.setItem('phase10_player_id', this.playerId);
+
+    if (typeof BroadcastChannel !== 'undefined') {
+      this.broadcastChannel = new BroadcastChannel('phase10_p2p_bus');
+      this.broadcastChannel.onmessage = (e) => {
+        const msg = e.data;
+        if (!msg || msg.senderId === this.playerId) return;
+
+        if (this.isHost && this.roomData) {
+          // If message is meant for a specific room and this is that room
+          if (msg.roomId && msg.roomId !== this.roomData.id) return;
+          const mockConn: any = {
+            peer: msg.senderPeerId || `tab_${msg.playerId}`,
+            send: (payload: any) => {
+              if (this.broadcastChannel) {
+                this.broadcastChannel.postMessage({ ...payload, senderId: this.playerId, targetPlayerId: msg.playerId });
+              }
+            }
+          };
+          this.handleGuestMessage(mockConn, msg);
+        } else if (!this.isHost) {
+          // Client listener
+          if (msg.targetPlayerId && msg.targetPlayerId !== this.playerId) return;
+          this.emit(msg.type, msg);
+        }
+      };
+    }
   }
 
   public initPeer(customId?: string): Promise<string> {
@@ -309,15 +335,23 @@ export class P2PClient {
     const conn = this.peer!.connect(targetPeerId, { reliable: true });
     this.hostConnection = conn;
 
+    const joinPayload = {
+      type: 'JOIN_ROOM',
+      playerId: this.playerId,
+      roomId: hostPeerIdOrCode.trim().toUpperCase(),
+      username,
+      avatar,
+      avatarColor,
+      senderId: this.playerId
+    };
+
+    if (this.broadcastChannel) {
+      this.broadcastChannel.postMessage(joinPayload);
+    }
+
     conn.on('open', () => {
       console.log('✅ Connected to P2P Host!');
-      conn.send({
-        type: 'JOIN_ROOM',
-        playerId: this.playerId,
-        username,
-        avatar,
-        avatarColor
-      });
+      conn.send(joinPayload);
     });
 
     conn.on('data', (data: any) => {
@@ -326,10 +360,6 @@ export class P2PClient {
 
     conn.on('error', (err) => {
       console.warn('Host connection error:', err);
-      this.emit('ERROR', {
-        messageEn: 'Could not connect to host. Make sure the Room/Host Code is correct.',
-        messageAr: 'تعذر الاتصال بالمضيف. تأكد من صحة رمز الغرفة/المضيف.'
-      });
     });
   }
 
@@ -570,11 +600,16 @@ export class P2PClient {
   }
 
   private broadcast(message: object) {
-    const payload = message;
+    const payload = { ...message, senderId: this.playerId };
     for (const conn of this.connections.values()) {
       if (conn.open) {
         conn.send(payload);
       }
+    }
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage(payload);
+      } catch (e) {}
     }
   }
 

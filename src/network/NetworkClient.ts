@@ -178,57 +178,105 @@ export class NetworkClient {
   // --- ACTIONS ---
 
   public createRoom(username: string, avatar: string, avatarColor: string, roomName?: string) {
-    this.send('CREATE_ROOM', { username, avatar, avatarColor, roomName });
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.send('CREATE_ROOM', { username, avatar, avatarColor, roomName });
+    } else {
+      this.isP2PMode = true;
+      p2pClient.createRoom(username, avatar, avatarColor, roomName);
+    }
   }
 
   public createOnlineRoom(username: string, avatar: string, avatarColor: string, roomName?: string) {
-    this.send('CREATE_ROOM', { username, avatar, avatarColor, roomName });
+    this.isP2PMode = true;
+    p2pClient.createRoom(username, avatar, avatarColor, roomName);
   }
 
   public joinRoom(roomId: string, username: string, avatar: string, avatarColor: string) {
     const cleanRoomId = (roomId || '').trim().toUpperCase();
-    this.send('JOIN_ROOM', { roomId: cleanRoomId, username, avatar, avatarColor });
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.send('JOIN_ROOM', { roomId: cleanRoomId, username, avatar, avatarColor });
+    } else {
+      this.isP2PMode = true;
+      p2pClient.joinRoom(cleanRoomId, username, avatar, avatarColor);
+    }
   }
 
   public joinOnlineRoom(roomId: string, username: string, avatar: string, avatarColor: string) {
     const cleanRoomId = (roomId || '').trim().toUpperCase();
-    this.send('JOIN_ROOM', { roomId: cleanRoomId, username, avatar, avatarColor });
+    this.isP2PMode = true;
+    p2pClient.joinRoom(cleanRoomId, username, avatar, avatarColor);
   }
 
   public addBot(difficulty: 'EASY' | 'MEDIUM' | 'MASTER' = 'MEDIUM') {
-    this.send('ADD_BOT', { difficulty });
+    if (this.isP2PMode) {
+      p2pClient.addBot(difficulty);
+    } else {
+      this.send('ADD_BOT', { difficulty });
+    }
   }
 
   public removePlayer(targetPlayerId: string) {
-    this.send('REMOVE_PLAYER', { targetPlayerId });
+    if (this.isP2PMode) {
+      p2pClient.removePlayer(targetPlayerId);
+    } else {
+      this.send('REMOVE_PLAYER', { targetPlayerId });
+    }
   }
 
   public startGame() {
-    this.send('START_GAME', {});
+    if (this.isP2PMode) {
+      p2pClient.startGame();
+    } else {
+      this.send('START_GAME', {});
+    }
   }
 
   public nextRound() {
-    this.send('NEXT_ROUND', {});
+    if (this.isP2PMode) {
+      p2pClient.nextRound();
+    } else {
+      this.send('NEXT_ROUND', {});
+    }
   }
 
   public drawCard(source: 'DRAW' | 'DISCARD') {
-    this.send('DRAW_CARD', { source });
+    if (this.isP2PMode) {
+      p2pClient.drawCard(source);
+    } else {
+      this.send('DRAW_CARD', { source });
+    }
   }
 
   public layPhase(groups: Card[][]) {
-    this.send('LAY_PHASE', { groups });
+    if (this.isP2PMode) {
+      p2pClient.layPhase(groups);
+    } else {
+      this.send('LAY_PHASE', { groups });
+    }
   }
 
   public hitPhase(cardId: string, targetPlayerId: string, targetPartIndex: number) {
-    this.send('HIT_PHASE', { cardId, targetPlayerId, targetPartIndex });
+    if (this.isP2PMode) {
+      p2pClient.hitPhase(cardId, targetPlayerId, targetPartIndex);
+    } else {
+      this.send('HIT_PHASE', { cardId, targetPlayerId, targetPartIndex });
+    }
   }
 
   public discardCard(cardId: string, targetSkipPlayerId?: string) {
-    this.send('DISCARD_CARD', { cardId, targetSkipPlayerId });
+    if (this.isP2PMode) {
+      p2pClient.discardCard(cardId, targetSkipPlayerId);
+    } else {
+      this.send('DISCARD_CARD', { cardId, targetSkipPlayerId });
+    }
   }
 
   public sendEmoji(emoji: string) {
-    this.send('SEND_EMOJI', { emoji });
+    if (this.isP2PMode) {
+      p2pClient.sendEmoji(emoji);
+    } else {
+      this.send('SEND_EMOJI', { emoji });
+    }
   }
 
   private clearLocalBotTimers() {
