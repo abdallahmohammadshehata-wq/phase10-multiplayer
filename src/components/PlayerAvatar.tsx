@@ -2,6 +2,7 @@ import React from 'react';
 import { Player } from '../types/game';
 import { useLanguage } from '../i18n/LanguageContext';
 import { Check, Ban, Crown } from 'lucide-react';
+import { AvatarIcon } from './AvatarIcon';
 
 interface PlayerAvatarProps {
   player: Player;
@@ -37,7 +38,7 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
           }`}
           style={{ backgroundColor: player.avatarColor || '#1e293b' }}
         >
-          {player.avatar}
+          <AvatarIcon avatar={player.avatar} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white drop-shadow-md" />
         </div>
 
         {/* Host Crown */}

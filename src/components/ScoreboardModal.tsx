@@ -1,7 +1,8 @@
 import React from 'react';
 import { Player } from '../types/game';
 import { useLanguage } from '../i18n/LanguageContext';
-import { X, Trophy, Medal, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Trophy, Medal, Sparkles, CheckCircle2, Bot, User } from 'lucide-react';
+import { AvatarIcon } from './AvatarIcon';
 
 interface ScoreboardModalProps {
   isOpen: boolean;
@@ -69,21 +70,23 @@ export const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0 shadow-md ${
                       rank === 0
-                        ? 'bg-gradient-to-tr from-amber-400 to-yellow-300 text-black ring-2 ring-yellow-400/50'
+                        ? 'bg-gradient-to-tr from-amber-400 to-yellow-300 text-amber-950 ring-2 ring-yellow-400/50'
                         : rank === 1
-                        ? 'bg-gradient-to-tr from-slate-300 to-slate-100 text-black'
+                        ? 'bg-gradient-to-tr from-slate-200 to-slate-400 text-slate-900'
                         : rank === 2
                         ? 'bg-gradient-to-tr from-amber-700 to-amber-600 text-white'
                         : 'bg-slate-800 text-slate-400'
                     }`}
                   >
-                    {rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : rank + 1}
+                    {rank === 0 ? <Medal className="w-5 h-5 text-amber-950" /> : rank === 1 ? <Medal className="w-5 h-5 text-slate-900" /> : rank === 2 ? <Medal className="w-5 h-5 text-amber-200" /> : rank + 1}
                   </div>
 
                   {/* Avatar & Name & Phase Progress Bar */}
                   <div className="flex flex-col flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xl">{player.avatar}</span>
+                      <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: player.avatarColor || '#334155' }}>
+                        <AvatarIcon avatar={player.avatar} className="w-4 h-4 text-white" />
+                      </div>
                       <span className="font-black text-sm text-white truncate">{player.username}</span>
                     </div>
 
@@ -107,8 +110,18 @@ export const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
                   <span className="block text-xs font-black text-red-400">
                     +{player.score} {t.points}
                   </span>
-                  <span className="block text-[10px] text-slate-400 font-bold">
-                    {player.isBot ? '🤖 Bot' : '👤 Human'}
+                  <span className="text-[10px] text-slate-400 font-bold flex items-center justify-end gap-1 mt-0.5">
+                    {player.isBot ? (
+                      <>
+                        <Bot className="w-3 h-3 text-purple-400" />
+                        <span>Bot</span>
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-3 h-3 text-blue-400" />
+                        <span>Player</span>
+                      </>
+                    )}
                   </span>
                 </div>
               </div>

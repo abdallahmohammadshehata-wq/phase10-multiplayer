@@ -153,10 +153,11 @@ export class Phase10Bot {
     const hand = bot.hand;
     if (hand.length === 0) throw new Error('Hand is empty');
 
-    // Filter out the card drawn from the discard pile this turn (rule: cannot discard drawn discard card)
+    // Filter out the card drawn this turn (from either draw pile / random pack or discard pile)
     let eligibleHand = hand;
-    if (state.drawnFromDiscardCardId && hand.length > 1) {
-      eligibleHand = hand.filter((c) => c.id !== state.drawnFromDiscardCardId);
+    const restrictedCardId = state.drawnThisTurnCardId || state.drawnFromDiscardCardId;
+    if (restrictedCardId && hand.length > 1) {
+      eligibleHand = hand.filter((c) => c.id !== restrictedCardId);
       if (eligibleHand.length === 0) eligibleHand = hand;
     }
 

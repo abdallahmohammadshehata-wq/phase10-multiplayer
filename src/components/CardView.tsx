@@ -13,6 +13,7 @@ interface CardViewProps {
   disabled?: boolean;
   faceDown?: boolean;
   isDrawnFromDiscard?: boolean;
+  isRestrictedDrawnCard?: boolean;
 }
 
 export const CardView: React.FC<CardViewProps> = ({
@@ -24,9 +25,11 @@ export const CardView: React.FC<CardViewProps> = ({
   mini = false,
   disabled = false,
   faceDown = false,
-  isDrawnFromDiscard = false
+  isDrawnFromDiscard = false,
+  isRestrictedDrawnCard = false
 }) => {
   const { isRTL } = useLanguage();
+  const isRestricted = isRestrictedDrawnCard || isDrawnFromDiscard;
 
   // --- 1. AUTHENTIC REAL PHASE 10 CARD BACK ---
   if (faceDown) {
@@ -179,26 +182,26 @@ export const CardView: React.FC<CardViewProps> = ({
       } ${style.bgGradient} border ${style.cardBorder} ${
         selected
           ? '-translate-y-3 sm:-translate-y-4 ring-2 sm:ring-4 ring-white shadow-2xl scale-105 z-30 ' + style.glow
-          : isDrawnFromDiscard
-          ? 'ring-2 sm:ring-3 ring-rose-500 shadow-lg shadow-rose-500/40 hover:-translate-y-1'
-          : 'hover:-translate-y-1 hover:shadow-xl'
+          : isRestricted
+          ? 'ring-2 sm:ring-3 ring-amber-500/80 shadow-lg shadow-amber-500/30 hover:-translate-y-2'
+          : 'hover:-translate-y-2 hover:shadow-xl'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
       style={{
         boxShadow: selected
           ? '0 15px 30px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -4px rgba(0, 0, 0, 0.4)'
-          : isDrawnFromDiscard
-          ? '0 6px 15px -2px rgba(225, 29, 72, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4)'
+          : isRestricted
+          ? '0 6px 15px -2px rgba(245, 158, 11, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4)'
           : '0 4px 10px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.4)'
       }}
     >
       {/* Prominent Glowing Lock & Restriction Badge */}
-      {isDrawnFromDiscard && (
+      {isRestricted && (
         <div
-          title={isRTL ? 'بطاقة مسحوبة حديثاً من كومة الإرمي (لا يمكن رميها في نفس الدور)' : 'Newly taken card from Discard Pile (cannot be discarded this turn)'}
-          className="absolute -top-3 -right-2 z-40 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 border-2 border-white text-white px-1.5 py-0.5 rounded-full shadow-2xl text-[9px] font-black flex items-center gap-1 animate-bounceShort select-none"
+          title={isRTL ? 'بطاقة مسحوبة حديثاً (لا يجوز رميها في نفس الدور)' : 'Newly taken card (cannot be discarded this turn)'}
+          className="absolute -top-3 -right-2 z-40 bg-gradient-to-r from-amber-600 via-rose-600 to-red-600 border-2 border-white text-white px-2 py-0.5 rounded-full shadow-2xl text-[9px] font-black flex items-center gap-1 animate-bounceShort select-none"
         >
           <Lock className="w-2.5 h-2.5 fill-current text-yellow-300" />
-          <span className="text-[8px] tracking-tight">{isRTL ? 'ممنوع الرمي' : 'Locked'}</span>
+          <span className="text-[8px] sm:text-[9px] tracking-tight">{isRTL ? 'ممنوع الرمي' : 'Locked'}</span>
         </div>
       )}
 
@@ -208,8 +211,8 @@ export const CardView: React.FC<CardViewProps> = ({
         <div className="absolute inset-0 bg-[radial-gradient(#00000008_1px,transparent_1px)] [background-size:6px_6px] pointer-events-none"></div>
 
         {/* Sub-badge at bottom of card face */}
-        {isDrawnFromDiscard && (
-          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-20 px-1.5 py-0.2 rounded-full bg-rose-950/80 border border-rose-500/60 text-rose-300 text-[7px] sm:text-[8px] font-black flex items-center gap-0.5 shadow-sm whitespace-nowrap">
+        {isRestricted && (
+          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-20 px-1.5 py-0.2 rounded-full bg-amber-950/90 border border-amber-500/70 text-amber-300 text-[7px] sm:text-[8px] font-black flex items-center gap-0.5 shadow-sm whitespace-nowrap">
             <Lock className="w-2 h-2 text-yellow-300" />
             <span>{isRTL ? 'مسحوبة حديثاً' : 'Newly Taken'}</span>
           </div>

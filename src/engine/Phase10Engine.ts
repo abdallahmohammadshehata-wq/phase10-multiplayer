@@ -90,6 +90,7 @@ export class Phase10Engine {
       turnTimerSeconds: 30,
       isStarted: true,
       drawnFromDiscardCardId: undefined,
+      drawnThisTurnCardId: undefined,
       lastActionMessage: {
         en: `Round ${roundNumber} Started! Turn: ${updatedPlayers[startingPlayerIndex % updatedPlayers.length].username}`,
         ar: `بدأت الجولة ${roundNumber}! دور: ${updatedPlayers[startingPlayerIndex % updatedPlayers.length].username}`
@@ -142,6 +143,7 @@ export class Phase10Engine {
       drawPileCount: newDrawPile.length,
       discardPile: newDiscardPile,
       turnStage: 'PLAY_OR_DISCARD',
+      drawnThisTurnCardId: card.id,
       drawnFromDiscardCardId: source === 'DISCARD' ? card.id : undefined,
       lastActionMessage: {
         en: `${activePlayer.username} drew a card from ${source === 'DRAW' ? 'Draw Pile' : 'Discard Pile'}`,
@@ -317,31 +319,32 @@ export class Phase10Engine {
       return { newState: state, isRoundOver: false, isGameOver: false };
     }
 
-    // Rule: Cannot discard the exact card that was drawn from the Discard Pile on this turn!
-    if (cardId && state.drawnFromDiscardCardId && cardId === state.drawnFromDiscardCardId) {
+    // Rule: Cannot discard the card drawn this turn (from either Random Pack / Draw Deck OR Discard Pile)
+    const restrictedCardId = state.drawnThisTurnCardId || state.drawnFromDiscardCardId;
+    if (cardId && restrictedCardId && cardId === restrictedCardId && activePlayer.hand.length > 1) {
       return {
         newState: state,
         isRoundOver: false,
         isGameOver: false,
-        errorEn: 'Rule: You cannot discard the card you just drew from the Discard Pile on the same turn!',
-        errorAr: 'قانون اللعبة: لا يجوز رمي البطاقة التي سحبتها للتو من كومة الإرمي في نفس الدور!'
+        errorEn: 'Rule: You cannot discard the card you just drew on the same turn!',
+        errorAr: 'قانون اللعبة: لا يجوز رمي البطاقة المسحوبة حديثاً في نفس الدور!'
       };
     }
 
     let cardToDiscard = activePlayer.hand.find((c) => c.id === cardId);
-    if (cardToDiscard && state.drawnFromDiscardCardId && cardToDiscard.id === state.drawnFromDiscardCardId) {
+    if (cardToDiscard && restrictedCardId && cardToDiscard.id === restrictedCardId && activePlayer.hand.length > 1) {
       return {
         newState: state,
         isRoundOver: false,
         isGameOver: false,
-        errorEn: 'Rule: You cannot discard the card you just drew from the Discard Pile on the same turn!',
-        errorAr: 'قانون اللعبة: لا يجوز رمي البطاقة التي سحبتها للتو من كومة الإرمي في نفس الدور!'
+        errorEn: 'Rule: You cannot discard the card you just drew on the same turn!',
+        errorAr: 'قانون اللعبة: لا يجوز رمي البطاقة المسحوبة حديثاً في نفس الدور!'
       };
     }
 
     if (!cardToDiscard) {
-      // Fallback: pick the first card in hand that is NOT the drawnFromDiscardCard
-      cardToDiscard = activePlayer.hand.find((c) => c.id !== state.drawnFromDiscardCardId);
+      // Fallback: pick the first card in hand that is NOT the restricted drawn card
+      cardToDiscard = activePlayer.hand.find((c) => c.id !== restrictedCardId);
       if (!cardToDiscard && activePlayer.hand.length > 0) {
         cardToDiscard = activePlayer.hand[0];
       }
@@ -392,6 +395,7 @@ export class Phase10Engine {
       activePlayerIndex: nextIndex,
       turnStage: 'DRAW',
       drawnFromDiscardCardId: undefined,
+      drawnThisTurnCardId: undefined,
       lastActionMessage: {
         en: skippedPlayerName
           ? `${activePlayer.username} discarded and skipped ${skippedPlayerName}! Turn: ${nextPlayer.username}`
@@ -449,6 +453,7 @@ export class Phase10Engine {
       discardPile,
       turnStage: isGameOver ? 'GAME_OVER' : 'ROUND_OVER',
       drawnFromDiscardCardId: undefined,
+      drawnThisTurnCardId: undefined,
       roundWinnerId,
       winnerId,
       lastActionMessage: {

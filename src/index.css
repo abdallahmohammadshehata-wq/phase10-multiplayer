@@ -13,6 +13,11 @@
     inset: 0;
     background-color: #060c18;
     color: #ffffff;
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   body {
@@ -24,15 +29,108 @@
   }
 }
 
-/* Casino Table Felt Backgrounds */
-.game-table-felt {
-  background: radial-gradient(circle at 50% 45%, #182e4e 0%, #0d1b2f 55%, #060c18 100%);
+/* ========================================================
+   AUTHENTIC CASINO & ESTIMATION-STYLE TABLE FELT THEMES
+   ======================================================== */
+
+/* 1. Classic Emerald Casino Felt (السجادة الخضراء الكلاسيكية للكازينو) */
+.theme-casino-emerald {
+  background: 
+    radial-gradient(circle at 50% 40%, rgba(16, 185, 129, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, #0d4a2b 0%, #07331d 55%, #031b0e 100%);
   background-attachment: fixed;
+}
+.theme-casino-emerald::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 16px 16px;
+  pointer-events: none;
+}
+
+/* 2. Royal Sapphire Velvet Felt (المخمل الكحلي الملكي) */
+.theme-royal-sapphire {
+  background: 
+    radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, #153a70 0%, #0c2347 55%, #061124 100%);
+  background-attachment: fixed;
+}
+.theme-royal-sapphire::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(147, 197, 253, 0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+  pointer-events: none;
+}
+
+/* 3. Crimson Ruby VIP Lounge (المخمل العنابي الفاخر) */
+.theme-crimson-ruby {
+  background: 
+    radial-gradient(circle at 50% 40%, rgba(244, 63, 94, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, #581525 0%, #3a0b17 55%, #1d040a 100%);
+  background-attachment: fixed;
+}
+.theme-crimson-ruby::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(251, 113, 133, 0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+  pointer-events: none;
+}
+
+/* 4. Obsidian Leather & Dark Mahogany (الجلد الأسود وخشب الماهوجني) */
+.theme-obsidian-wood {
+  background: 
+    radial-gradient(circle at 50% 40%, rgba(148, 163, 184, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, #222630 0%, #14171f 55%, #080a0e 100%);
+  background-attachment: fixed;
+}
+.theme-obsidian-wood::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 12px 12px;
+  pointer-events: none;
+}
+
+/* 5. Cyber Neon Tournament Felt (طاولة البطولات العصرية) */
+.theme-cyber-neon {
+  background: 
+    radial-gradient(circle at 50% 40%, rgba(168, 85, 247, 0.2) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, #20144d 0%, #120b2e 55%, #070414 100%);
+  background-attachment: fixed;
+}
+.theme-cyber-neon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(6, 182, 212, 0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+/* Padded Leather / Wooden Casino Rail Outline */
+.casino-table-rail {
+  border: 4px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    inset 0 0 40px rgba(0, 0, 0, 0.7),
+    0 10px 40px -10px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 215, 0, 0.15);
+}
+
+/* Central Spotlight for Decks & Laid Cards */
+.table-center-spotlight {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 40%, transparent 70%);
 }
 
 .lobby-mesh-bg {
-  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-              radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.18) 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.18) 0%, transparent 40%),
               radial-gradient(circle at 50% 50%, #0d1829 0%, #060c18 100%);
 }
 
@@ -144,4 +242,39 @@
 
 .animate-pulseGlow {
   animation: pulseGlow 2s infinite ease-in-out;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+/* Safe area utilities */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Tablet (640px+) — Lobby and game table widen */
+@media (min-width: 640px) {
+  .game-table-felt {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* Desktop (1024px+) — Centered game container */
+@media (min-width: 1024px) {
+  #root {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }

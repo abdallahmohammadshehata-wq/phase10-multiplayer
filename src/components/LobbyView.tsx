@@ -3,7 +3,8 @@ import { Player, RoomInfo } from '../types/game';
 import { useLanguage } from '../i18n/LanguageContext';
 import { sounds } from '../audio/SoundEffects';
 import QRCode from 'qrcode';
-import { Play, UserPlus, Trash2, Copy, Check, Sparkles, Bot, Users, Wifi, QrCode } from 'lucide-react';
+import { Play, UserPlus, Trash2, Copy, Check, Sparkles, Bot, Users, Wifi, QrCode, Globe, Crown, AlertTriangle, ShieldCheck, ArrowRight } from 'lucide-react';
+import { AvatarIcon, AVATAR_KEYS } from './AvatarIcon';
 
 interface LobbyViewProps {
   myPlayerId: string;
@@ -18,7 +19,7 @@ interface LobbyViewProps {
   onStartSoloWithBots: (username: string, avatar: string, avatarColor: string, botCount: number) => void;
 }
 
-const AVATAR_OPTIONS = ['👑', '🎮', '🃏', '🚀', '🔥', '💎', '🦊', '🦁', '🤖', '⚡', '🌟', '🦄'];
+const AVATAR_OPTIONS = AVATAR_KEYS;
 const COLOR_OPTIONS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
 
 export const LobbyView: React.FC<LobbyViewProps> = ({
@@ -36,7 +37,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   const { t, isRTL } = useLanguage();
 
   const [username, setUsername] = useState<string>(localStorage.getItem('phase10_username') || `Player_${Math.floor(100 + Math.random() * 900)}`);
-  const [selectedAvatar, setSelectedAvatar] = useState<string>('👑');
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('crown');
   const [selectedColor, setSelectedColor] = useState<string>('#3b82f6');
   const [inputRoomCode, setInputRoomCode] = useState<string>('');
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
@@ -163,7 +164,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             <div className="mt-3.5 p-3 rounded-2xl bg-gradient-to-r from-indigo-950/90 to-purple-950/90 border border-indigo-500/40 shadow-lg flex flex-col gap-2">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-1.5 text-xs font-black text-indigo-300">
-                  <span className="text-base">🌍</span>
+                  <Globe className="w-4 h-4 text-cyan-400" />
                   <span>{isRTL ? 'رابط اللعب عن بُعد (عبر الإنترنت):' : 'Online Global Play Link:'}</span>
                 </div>
                 <button
@@ -199,7 +200,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           {/* QR Code for Mobile Instant Join */}
           {qrDataUrl && (
             <div className="flex flex-col items-center bg-slate-950/90 p-4 rounded-3xl border border-white/15 shadow-2xl flex-shrink-0">
-              <div className="p-2.5 bg-white rounded-2xl shadow-xl">
+              <div className="p-2.5 bg-white rounded-2xl shadow-xl ring-2 ring-cyan-500/40">
                 <img src={qrDataUrl} alt="Room QR Code" className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg" />
               </div>
               <span className="text-[11px] font-black text-slate-200 mt-2.5 text-center flex items-center gap-1.5">
@@ -222,28 +223,31 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 >
                   <div className="flex flex-col items-center gap-2">
                     <div
-                      className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl shadow-lg border-2 border-white/30"
+                      className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 border-white/30"
                       style={{ backgroundColor: player.avatarColor }}
                     >
-                      {player.avatar}
+                      <AvatarIcon avatar={player.avatar} className="w-7 h-7 sm:w-8 sm:h-8 text-white drop-shadow-md" />
                     </div>
                     <span className="font-black text-sm text-white text-center truncate max-w-[120px]">
                       {player.username}
                     </span>
                     <div className="flex items-center gap-1">
                       {player.isHost && (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-950 border border-amber-500/70 text-amber-300 text-[10px] font-black shadow-sm">
-                          👑 {t.host}
+                        <span className="px-2 py-0.5 rounded-full bg-amber-950 border border-amber-500/70 text-amber-300 text-[10px] font-black shadow-sm flex items-center gap-1">
+                          <Crown className="w-3 h-3 text-amber-400" />
+                          <span>{t.host}</span>
                         </span>
                       )}
                       {player.isBot && (
-                        <span className="px-2 py-0.5 rounded-full bg-purple-950 border border-purple-500/70 text-purple-300 text-[10px] font-black shadow-sm">
-                          🤖 {player.botDifficulty || 'BOT'}
+                        <span className="px-2 py-0.5 rounded-full bg-purple-950 border border-purple-500/70 text-purple-300 text-[10px] font-black shadow-sm flex items-center gap-1">
+                          <Bot className="w-3 h-3 text-purple-300" />
+                          <span>{player.botDifficulty || 'BOT'}</span>
                         </span>
                       )}
                       {player.id === myPlayerId && (
-                        <span className="px-2 py-0.5 rounded-full bg-blue-950 border border-blue-500/70 text-blue-300 text-[10px] font-black shadow-sm">
-                          👤 {t.you}
+                        <span className="px-2 py-0.5 rounded-full bg-blue-950 border border-blue-500/70 text-blue-300 text-[10px] font-black shadow-sm flex items-center gap-1">
+                          <Users className="w-3 h-3 text-blue-300" />
+                          <span>{t.you}</span>
                         </span>
                       )}
                     </div>
@@ -287,9 +291,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 onChange={(e) => setSelectedBotDifficulty(e.target.value as any)}
                 className="bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold rounded-xl px-3 py-3 focus:outline-none focus:border-purple-500"
               >
-                <option value="EASY">🤖 {t.botEasy}</option>
-                <option value="MEDIUM">🤖 {t.botMedium}</option>
-                <option value="MASTER">🧠 {t.botMaster}</option>
+                <option value="EASY">{t.botEasy}</option>
+                <option value="MEDIUM">{t.botMedium}</option>
+                <option value="MASTER">{t.botMaster}</option>
               </select>
 
               <button
@@ -316,15 +320,17 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               <span>{t.startGame}</span>
             </button>
           ) : (
-            <div className="px-6 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-300 font-bold text-sm text-center shadow-lg">
-              ⏳ {isRTL ? 'في انتظار المضيف لبدء اللعبة...' : 'Waiting for host to start the game...'}
+            <div className="px-6 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-300 font-bold text-sm text-center shadow-lg flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+              <span>{isRTL ? 'في انتظار المضيف لبدء اللعبة...' : 'Waiting for host to start the game...'}</span>
             </div>
           )}
         </div>
 
         {!canStart && isHost && (
-          <p className="text-xs text-amber-400 font-bold bg-amber-950/60 border border-amber-500/40 px-3 py-1.5 rounded-xl">
-            ⚠️ {t.needMinPlayers}
+          <p className="text-xs text-amber-400 font-bold bg-amber-950/60 border border-amber-500/40 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <span>{t.needMinPlayers}</span>
           </p>
         )}
       </div>
@@ -368,20 +374,20 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         {/* Avatar Picker */}
         <label className="text-xs font-black text-slate-300 uppercase tracking-wider mt-1">{t.chooseAvatar}</label>
         <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none">
-          {AVATAR_OPTIONS.map((emoji) => (
+          {AVATAR_OPTIONS.map((avatarKey) => (
             <button
-              key={emoji}
+              key={avatarKey}
               onClick={() => {
                 sounds.playCardSelect();
-                setSelectedAvatar(emoji);
+                setSelectedAvatar(avatarKey);
               }}
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 transition-all ${
-                selectedAvatar === emoji
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all ${
+                selectedAvatar === avatarKey
                   ? 'ring-3 ring-cyan-400 scale-110 bg-slate-800 shadow-xl'
                   : 'bg-slate-950/80 hover:bg-slate-800 opacity-70'
               }`}
             >
-              {emoji}
+              <AvatarIcon avatar={avatarKey} className="w-5 h-5 text-white" />
             </button>
           ))}
         </div>
@@ -411,7 +417,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           onClick={() => (onCreateOnlineRoom ? onCreateOnlineRoom(username, selectedAvatar, selectedColor) : onCreateRoom(username, selectedAvatar, selectedColor))}
           className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:brightness-110 text-white font-black text-sm sm:text-base shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 border border-blue-400/40"
         >
-          <span className="text-xl">🌐</span>
+          <Globe className="w-5 h-5 text-cyan-300" />
           <span>{isRTL ? 'إنشاء غرفة أونلاين (لعب عن بُعد برابط)' : 'Create Online Room (Global Link)'}</span>
         </button>
 

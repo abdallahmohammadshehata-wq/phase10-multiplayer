@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, GameState } from '../types/game';
 import { CardView } from './CardView';
 import { useLanguage } from '../i18n/LanguageContext';
-import { Sparkles, RefreshCw, Layers } from 'lucide-react';
+import { Sparkles, RefreshCw, Layers, Trash2 } from 'lucide-react';
 import { sounds } from '../audio/SoundEffects';
 
 interface TableCenterProps {
@@ -25,7 +25,10 @@ export const TableCenter: React.FC<TableCenterProps> = ({
   const activePlayer = gameState.players[gameState.activePlayerIndex];
   const isMyTurn = activePlayer?.id === myPlayerId;
   const topDiscard = gameState.discardPile[gameState.discardPile.length - 1];
-  const isSelectedCardRestricted = !!selectedCardId && selectedCardId === gameState.drawnFromDiscardCardId;
+  const isSelectedCardRestricted = !!selectedCardId && (
+    selectedCardId === gameState.drawnThisTurnCardId || 
+    selectedCardId === gameState.drawnFromDiscardCardId
+  );
   const canDraw = isMyTurn && gameState.turnStage === 'DRAW';
   const canDiscardOnPile = isMyTurn && gameState.turnStage === 'PLAY_OR_DISCARD' && !!selectedCardId && !isSelectedCardRestricted && !!onDiscard;
 
@@ -86,10 +89,10 @@ export const TableCenter: React.FC<TableCenterProps> = ({
         )}
       </div>
 
-      {/* Piles Center Area: 3D Casino Table Card Trays */}
-      <div className="flex items-center justify-center gap-6 sm:gap-12 py-1">
+      {/* Piles Center Area: 3D Casino Table Card Trays with Felt Spotlight */}
+      <div className="relative rounded-3xl px-6 py-2.5 sm:px-10 sm:py-3.5 table-center-spotlight border border-white/10 shadow-2xl flex items-center justify-center gap-8 sm:gap-14 my-0.5 backdrop-blur-sm">
         {/* Draw Pile (Face Down Stacked Deck) */}
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-1.5">
           <div
             onClick={handleDrawFromPile}
             className={`relative group transition-all duration-200 ${
@@ -97,8 +100,8 @@ export const TableCenter: React.FC<TableCenterProps> = ({
             }`}
           >
             {/* Multi-layered 3D Card Stack Base */}
-            <div className="absolute top-1.5 left-1.5 w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28 rounded-xl bg-slate-900 border border-slate-700 shadow-md"></div>
-            <div className="absolute top-0.5 left-0.5 w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28 rounded-xl bg-blue-950 border border-blue-800 shadow-md"></div>
+            <div className="absolute top-2 left-2 w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28 rounded-xl bg-slate-900 border border-slate-700 shadow-md"></div>
+            <div className="absolute top-1 left-1 w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28 rounded-xl bg-blue-950 border border-blue-800 shadow-md"></div>
 
             <div className="relative z-10">
               <CardView faceDown={true} />
@@ -116,13 +119,13 @@ export const TableCenter: React.FC<TableCenterProps> = ({
           </div>
 
           <span className="text-[10px] sm:text-xs font-black text-slate-300 drop-shadow flex items-center gap-1">
-            <Layers className="w-3 h-3 text-cyan-400" />
+            <Layers className="w-3.5 h-3.5 text-cyan-400" />
             <span>{t.drawFromPile}</span>
           </span>
         </div>
 
         {/* Discard Pile (Face Up Discarded Card) */}
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-1.5">
           <div
             onClick={handleDiscardPileClick}
             className={`relative group transition-all duration-200 ${
@@ -155,7 +158,7 @@ export const TableCenter: React.FC<TableCenterProps> = ({
           <span className="text-[10px] sm:text-xs font-black text-slate-300 drop-shadow">
             {canDiscardOnPile ? (
               <span className="text-red-400 font-black animate-pulse flex items-center gap-1">
-                <span>🗑️</span>
+                <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 <span>{isRTL ? 'اضغط هنا للإرمي' : 'Tap here to Discard'}</span>
               </span>
             ) : (

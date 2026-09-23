@@ -73,7 +73,16 @@ export interface GameState {
   isStarted: boolean;
   roundWinnerId?: string;
   drawnFromDiscardCardId?: string;
+  drawnThisTurnCardId?: string;
 }
+
+export type TableTheme =
+  | 'CASINO_EMERALD'
+  | 'ROYAL_SAPPHIRE'
+  | 'CRIMSON_RUBY'
+  | 'OBSIDIAN_WOOD'
+  | 'CYBER_NEON'
+  | 'AUTO_ROUND';
 
 export interface RoomInfo {
   roomId: string;

@@ -3,13 +3,14 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { useTheme } from '../theme/ThemeContext';
 import { sounds } from '../audio/SoundEffects';
 import { PwaInstallButton } from './PwaInstallButton';
-import { Moon, Sun, Volume2, VolumeX, BookOpen, Trophy, Globe, LogOut, Sparkles, Copy, Check } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, BookOpen, Trophy, Globe, LogOut, Sparkles, Copy, Check, Palette } from 'lucide-react';
 
 interface HeaderControlsProps {
   roundNumber?: number;
   roomId?: string;
   onOpenPhaseGuide: () => void;
   onOpenScoreboard?: () => void;
+  onOpenThemeModal?: () => void;
   onLeaveGame?: () => void;
   isInGame?: boolean;
 }
@@ -19,6 +20,7 @@ export const HeaderControls: React.FC<HeaderControlsProps> = ({
   roomId,
   onOpenPhaseGuide,
   onOpenScoreboard,
+  onOpenThemeModal,
   onLeaveGame,
   isInGame = false
 }) => {
@@ -113,6 +115,21 @@ export const HeaderControls: React.FC<HeaderControlsProps> = ({
           >
             <Trophy className="w-4 h-4 text-yellow-400 animate-bounceShort" />
             <span className="hidden md:inline text-xs font-bold">{t.scoreboard}</span>
+          </button>
+        )}
+
+        {/* Table Felt Theme Button */}
+        {onOpenThemeModal && (
+          <button
+            onClick={() => {
+              sounds.playCardSelect();
+              onOpenThemeModal();
+            }}
+            className="p-1.5 sm:p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-amber-400 hover:text-amber-300 transition-all active:scale-95 shadow-md flex items-center gap-1"
+            title={t.tableTheme}
+          >
+            <Palette className="w-4 h-4 text-amber-400" />
+            <span className="hidden md:inline text-xs font-bold">{t.tableTheme}</span>
           </button>
         )}
 

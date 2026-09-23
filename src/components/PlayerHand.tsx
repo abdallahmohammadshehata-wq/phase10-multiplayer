@@ -3,7 +3,7 @@ import { Card } from '../types/game';
 import { CardView } from './CardView';
 import { useLanguage } from '../i18n/LanguageContext';
 import { PhaseValidator } from '../engine/PhaseValidator';
-import { ArrowUpDown, Palette, Trash2, Sparkles, Check } from 'lucide-react';
+import { ArrowUpDown, Palette, Trash2, Sparkles, Check, Lock, Ban } from 'lucide-react';
 import { sounds } from '../audio/SoundEffects';
 
 interface PlayerHandProps {
@@ -13,6 +13,7 @@ interface PlayerHandProps {
   hasLaidPhase: boolean;
   currentPhase: number;
   drawnFromDiscardCardId?: string;
+  drawnThisTurnCardId?: string;
   onSelectCard?: (cardId?: string) => void;
   onLayPhase: (selectedCards: Card[]) => void;
   onDiscard: (cardId: string) => void;
@@ -25,6 +26,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   hasLaidPhase,
   currentPhase,
   drawnFromDiscardCardId,
+  drawnThisTurnCardId,
   onSelectCard,
   onLayPhase,
   onDiscard
@@ -32,6 +34,8 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   const { t, isRTL } = useLanguage();
   const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set());
   const [sortMode, setSortMode] = useState<'NUMBER' | 'COLOR'>('NUMBER');
+
+  const restrictedCardId = drawnThisTurnCardId || drawnFromDiscardCardId;
 
   const toggleCardSelect = (card: Card) => {
     sounds.playCardSelect();
@@ -58,7 +62,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   const handleCardDoubleClick = (card: Card) => {
     if (!isMyTurn || !canPlayOrDiscard) return;
 
-    if (drawnFromDiscardCardId && card.id === drawnFromDiscardCardId && cards.length > 1) {
+    if (restrictedCardId && card.id === restrictedCardId && cards.length > 1) {
       sounds.playSkipSound();
       sounds.vibrate(50);
       return;
@@ -100,7 +104,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
 
   const selectedCardsList = cards.filter((c) => selectedCardIds.has(c.id));
   const singleSelectedCard = selectedCardIds.size === 1 ? cards.find((c) => selectedCardIds.has(c.id)) : undefined;
-  const isSelectedRestricted = isMyTurn && canPlayOrDiscard && !!drawnFromDiscardCardId && singleSelectedCard?.id === drawnFromDiscardCardId && cards.length > 1;
+  const isSelectedRestricted = isMyTurn && canPlayOrDiscard && !!restrictedCardId && singleSelectedCard?.id === restrictedCardId && cards.length > 1;
 
   // Check if hand or selection can complete current phase
   const isSelectedValidPhase = selectedCardsList.length >= 3 && PhaseValidator.findPhaseInCards(selectedCardsList, currentPhase) !== null;
@@ -108,14 +112,14 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center bg-slate-900/95 dark:bg-phase-darkCard/95 border-t border-slate-700/80 backdrop-blur-xl px-1.5 py-1.5 sm:px-4 sm:py-2.5 rounded-t-2xl sm:rounded-t-3xl shadow-2xl transition-all flex-shrink-0">
-      {/* Rule Notice if holding a card drawn from discard */}
-      {isMyTurn && canPlayOrDiscard && drawnFromDiscardCardId && cards.length > 1 && (
-        <div className="mb-1 text-[10px] text-amber-300 font-bold bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1.5 animate-fadeIn">
-          <span>🔒</span>
+      {/* Rule Notice if holding a card drawn this turn */}
+      {isMyTurn && canPlayOrDiscard && restrictedCardId && cards.length > 1 && (
+        <div className="mb-1 text-[10px] sm:text-xs text-amber-300 font-bold bg-amber-950/70 px-3 py-1 rounded-full border border-amber-500/50 flex items-center gap-1.5 animate-fadeIn shadow-md">
+          <Lock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
           <span>
             {isRTL
-              ? 'تنبيه: البطاقة المسحوبة من الإرمي لا يمكن رميها في نفس الدور، اختر بطاقة أخرى.'
-              : 'Rule: Card drawn from discard pile cannot be discarded this turn.'}
+              ? 'تنبيه: البطاقة المسحوبة حديثاً لا يمكن رميها في نفس الدور، اختر بطاقة أخرى.'
+              : 'Rule: The newly drawn card cannot be discarded this turn.'}
           </span>
         </div>
       )}
@@ -211,35 +215,45 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
             <Trash2 className="w-3 h-3" />
             <span>
               {isSelectedRestricted
-                ? isRTL ? '🚫 مسحوبة من الإرمي (ممنوع رميها)' : '🚫 Drawn from Discard (Forbidden)'
+                ? isRTL ? 'مسحوبة حديثاً (ممنوع رميها)' : 'Newly Drawn (Locked)'
                 : isMyTurn && canPlayOrDiscard && selectedCardIds.size === 1 && singleSelectedCard
                 ? isRTL ? `إرمي (${singleSelectedCard.type === 'NUMBER' ? singleSelectedCard.value : singleSelectedCard.type})` : `Discard (${singleSelectedCard.type === 'NUMBER' ? singleSelectedCard.value : singleSelectedCard.type})`
                 : isMyTurn && canPlayOrDiscard && hasLaidPhase && selectedCardIds.size !== 1
-                ? isRTL ? 'حدد بطاقة للإرمي ➔' : 'Select card to Discard ➔'
+                ? isRTL ? 'حدد بطاقة للإرمي' : 'Select card to Discard'
                 : t.discardToEndTurn}
             </span>
           </button>
         </div>
       </div>
 
-      {/* Responsive Hand Cards Row: Safe horizontal scroll with full padding so 1st card is never cropped */}
-      <div className="w-full max-w-5xl flex items-center justify-start md:justify-center overflow-x-auto py-2 px-4 sm:px-6 gap-1.5 sm:gap-2 md:gap-2.5 scrollbar-thin scrollbar-thumb-slate-700 overscroll-x-contain">
-        {sortedCards.map((card) => {
-          const isSelected = selectedCardIds.has(card.id);
-          const isCardDrawnFromDiscard = isMyTurn && canPlayOrDiscard && !!drawnFromDiscardCardId && card.id === drawnFromDiscardCardId && cards.length > 1;
+      {/* Responsive Hand Cards Row: Fits 100% of cards on Desktop screens without horizontal scroll */}
+      <div className="w-full max-w-6xl xl:max-w-7xl flex items-center justify-start md:justify-center overflow-x-auto md:overflow-x-visible py-2 sm:py-3 px-3 sm:px-6 scrollbar-thin scrollbar-thumb-slate-700 overscroll-x-contain">
+        <div className={`flex items-center justify-start md:justify-center transition-all ${
+          sortedCards.length > 10 
+            ? 'gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5' 
+            : 'gap-1.5 sm:gap-2 md:gap-3'
+        }`}>
+          {sortedCards.map((card, idx) => {
+            const isSelected = selectedCardIds.has(card.id);
+            const isCardRestricted = isMyTurn && canPlayOrDiscard && !!restrictedCardId && card.id === restrictedCardId && cards.length > 1;
 
-          return (
-            <div key={card.id} className="flex-shrink-0 transition-transform">
-              <CardView
-                card={card}
-                selected={isSelected}
-                isDrawnFromDiscard={isCardDrawnFromDiscard}
-                onClick={() => toggleCardSelect(card)}
-                onDoubleClick={() => handleCardDoubleClick(card)}
-              />
-            </div>
-          );
-        })}
+            return (
+              <div 
+                key={card.id} 
+                className="flex-shrink-0 transition-all duration-200 hover:z-30 hover:-translate-y-3 sm:hover:-translate-y-5"
+                style={{ zIndex: isSelected ? 40 : idx + 1 }}
+              >
+                <CardView
+                  card={card}
+                  selected={isSelected}
+                  isRestrictedDrawnCard={isCardRestricted}
+                  onClick={() => toggleCardSelect(card)}
+                  onDoubleClick={() => handleCardDoubleClick(card)}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

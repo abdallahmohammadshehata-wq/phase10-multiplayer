@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, GameState, Player, RoomInfo, EmojiReaction } from './types/game';
+import { Card, GameState, Player, RoomInfo, EmojiReaction, TableTheme } from './types/game';
 import { network } from './network/NetworkClient';
 import { sounds } from './audio/SoundEffects';
 import { useLanguage } from './i18n/LanguageContext';
@@ -15,6 +15,8 @@ import { PlayerAvatar } from './components/PlayerAvatar';
 import { PhaseGuideModal } from './components/PhaseGuideModal';
 import { ScoreboardModal } from './components/ScoreboardModal';
 import { EmojiReactions } from './components/EmojiReactions';
+import { RoundMilestoneBanner } from './components/RoundMilestoneBanner';
+import { TableThemeModal } from './components/TableThemeModal';
 import { Trophy, RefreshCw, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -28,9 +30,46 @@ export const App: React.FC = () => {
   // Modals & Panels
   const [isPhaseGuideOpen, setIsPhaseGuideOpen] = useState(false);
   const [isScoreboardOpen, setIsScoreboardOpen] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [activeReactions, setActiveReactions] = useState<EmojiReaction[]>([]);
   const [errorMessage, setErrorMessage] = useState<{ en: string; ar: string } | null>(null);
   const [successToast, setSuccessToast] = useState<{ en: string; ar: string } | null>(null);
+
+  // Table Felt Theme (Persisted in localStorage)
+  const [tableTheme, setTableTheme] = useState<TableTheme>(() => {
+    return (localStorage.getItem('phase10_table_theme') as TableTheme) || 'AUTO_ROUND';
+  });
+
+  const handleSelectTheme = (theme: TableTheme) => {
+    setTableTheme(theme);
+    localStorage.setItem('phase10_table_theme', theme);
+    setIsThemeModalOpen(false);
+  };
+
+  const getEffectiveThemeClass = () => {
+    if (tableTheme === 'AUTO_ROUND') {
+      const round = gameState?.roundNumber || 1;
+      if (round <= 2) return 'theme-casino-emerald';
+      if (round <= 4) return 'theme-royal-sapphire';
+      if (round <= 6) return 'theme-cyber-neon';
+      if (round <= 8) return 'theme-crimson-ruby';
+      return 'theme-obsidian-wood';
+    }
+    switch (tableTheme) {
+      case 'CASINO_EMERALD':
+        return 'theme-casino-emerald';
+      case 'ROYAL_SAPPHIRE':
+        return 'theme-royal-sapphire';
+      case 'CRIMSON_RUBY':
+        return 'theme-crimson-ruby';
+      case 'OBSIDIAN_WOOD':
+        return 'theme-obsidian-wood';
+      case 'CYBER_NEON':
+        return 'theme-cyber-neon';
+      default:
+        return 'theme-casino-emerald';
+    }
+  };
 
   // Selected card in hand for Hit actions
   const [selectedHitCardId, setSelectedHitCardId] = useState<string | undefined>();
@@ -226,10 +265,11 @@ export const App: React.FC = () => {
   };
 
   const handleDiscard = (cardId: string) => {
-    if (gameState?.drawnFromDiscardCardId && cardId === gameState.drawnFromDiscardCardId) {
+    const restrictedCardId = gameState?.drawnThisTurnCardId || gameState?.drawnFromDiscardCardId;
+    if (restrictedCardId && cardId === restrictedCardId && (myPlayer?.hand?.length || 0) > 1) {
       setErrorMessage({
-        en: 'Rule: You cannot discard the card you just drew from the Discard Pile on the same turn!',
-        ar: 'قانون اللعبة: لا يجوز رمي البطاقة التي سحبتها للتو من كومة الإرمي في نفس الدور!'
+        en: 'Rule: You cannot discard the card you just drew on the same turn!',
+        ar: 'قانون اللعبة: لا يجوز رمي البطاقة المسحوبة حديثاً في نفس الدور!'
       });
       sounds.playSkipSound();
       setTimeout(() => setErrorMessage(null), 3500);
@@ -266,13 +306,14 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full flex flex-col game-table-felt text-white select-none overflow-hidden">
+    <div className={`fixed inset-0 w-full h-full flex flex-col ${getEffectiveThemeClass()} text-white select-none overflow-hidden transition-colors duration-700`}>
       {/* Top Navbar */}
       <HeaderControls
         roundNumber={gameState?.roundNumber}
         roomId={gameState?.roomId || roomInfo?.roomId}
         onOpenPhaseGuide={() => setIsPhaseGuideOpen(true)}
         onOpenScoreboard={() => setIsScoreboardOpen(true)}
+        onOpenThemeModal={() => setIsThemeModalOpen(true)}
         onLeaveGame={handleLeaveGame}
         isInGame={!!gameState?.isStarted}
       />
@@ -334,10 +375,10 @@ export const App: React.FC = () => {
             />
           </div>
         ) : (
-          // In-Game Active Table Screen (Fits 100% of mobile & desktop viewport)
-          <div className="w-full h-full flex flex-col items-center justify-between relative max-w-6xl py-0.5 px-1 sm:px-2 overflow-hidden min-h-0">
+          // In-Game Active Table Screen (Fits 100% of mobile & desktop viewport with Casino Table Rail)
+          <div className="w-full h-full flex flex-col items-center justify-between relative max-w-7xl py-0.5 px-1 sm:px-3 overflow-hidden min-h-0 casino-table-rail rounded-2xl sm:rounded-3xl m-0.5 sm:m-1">
             {/* Opponents Top Bar (Safe horizontal scroll with left/right padding) */}
-            <div className="w-full flex-shrink-0 flex items-center justify-start md:justify-center gap-2.5 sm:gap-4 py-1.5 px-3 overflow-x-auto scrollbar-none overscroll-x-contain">
+            <div className="w-full flex-shrink-0 flex items-center justify-start md:justify-center gap-2.5 sm:gap-4 py-1 px-3 overflow-x-auto scrollbar-none overscroll-x-contain">
               {(gameState.players || []).map((p, pIdx) => {
                 const isCurrentTurn = gameState.activePlayerIndex === pIdx;
 
@@ -352,8 +393,15 @@ export const App: React.FC = () => {
               })}
             </div>
 
+            {/* Estimation & Phase 10 World Tour Style Round Milestone Banner */}
+            <RoundMilestoneBanner
+              gameState={gameState}
+              myPlayer={myPlayer}
+              onOpenPhaseGuide={() => setIsPhaseGuideOpen(true)}
+            />
+
             {/* Scrollable Center Game Arena: Decks + Table Laid Phases */}
-            <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center justify-start gap-1.5 py-0.5 px-1 sm:px-2 scrollbar-thin scrollbar-thumb-slate-700">
+            <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center justify-start gap-1 py-0.5 px-1 sm:px-2 scrollbar-thin scrollbar-thumb-slate-700">
               {/* Table Center (Draw Deck & Discard Pile) */}
               <TableCenter
                 gameState={gameState}
@@ -377,7 +425,7 @@ export const App: React.FC = () => {
               <EmojiReactions onSendEmoji={handleSendEmoji} />
             </div>
 
-            {/* Active Player's Hand (Pinned to Bottom) */}
+            {/* Active Player's Hand (Pinned to Bottom, Desktop Auto-Fit & 100% visible) */}
             {myPlayer && (
               <div className="w-full flex-shrink-0">
                 <PlayerHand
@@ -387,6 +435,7 @@ export const App: React.FC = () => {
                   hasLaidPhase={myPlayer.hasLaidPhaseThisRound}
                   currentPhase={myPlayer.currentPhase}
                   drawnFromDiscardCardId={gameState.drawnFromDiscardCardId}
+                  drawnThisTurnCardId={gameState.drawnThisTurnCardId}
                   onSelectCard={(id) => setSelectedHitCardId(id)}
                   onLayPhase={handleLayPhase}
                   onDiscard={handleDiscard}
@@ -467,6 +516,14 @@ export const App: React.FC = () => {
         onClose={() => setIsScoreboardOpen(false)}
         players={gameState?.players || players}
         roundNumber={gameState?.roundNumber || 1}
+      />
+
+      {/* Table Felt Theme Selector Modal */}
+      <TableThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        currentTheme={tableTheme}
+        onSelectTheme={handleSelectTheme}
       />
     </div>
   );
