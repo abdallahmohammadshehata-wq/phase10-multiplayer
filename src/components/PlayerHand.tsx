@@ -110,8 +110,28 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   const isSelectedValidPhase = selectedCardsList.length >= 3 && PhaseValidator.findPhaseInCards(selectedCardsList, currentPhase) !== null;
   const isHandHasValidPhase = !hasLaidPhase && PhaseValidator.findPhaseInCards(cards, currentPhase) !== null;
 
+  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+
+  // Dynamic Overlap Calculation (Cards laid above each other like a real hand):
+  // When card count increases, overlap increases so hand never overflows the screen!
+  const getOverlapMarginClass = (idx: number) => {
+    if (idx === 0) return '';
+    if (sortedCards.length > 10) {
+      return '-ml-5 xs:-ml-6 sm:-ml-8 md:-ml-10 lg:-ml-12';
+    }
+    if (sortedCards.length > 8) {
+      return '-ml-4 xs:-ml-5 sm:-ml-7 md:-ml-9 lg:-ml-10';
+    }
+    if (sortedCards.length > 5) {
+      return '-ml-3 xs:-ml-4 sm:-ml-6 md:-ml-7 lg:-ml-8';
+    }
+    return 'ml-1 sm:ml-2';
+  };
+
+  const midIndex = Math.max(1, (sortedCards.length - 1) / 2);
+
   return (
-    <div className="w-full flex flex-col items-center bg-slate-900/95 dark:bg-phase-darkCard/95 border-t border-slate-700/80 backdrop-blur-xl px-1.5 py-1.5 sm:px-4 sm:py-2.5 rounded-t-2xl sm:rounded-t-3xl shadow-2xl transition-all flex-shrink-0">
+    <div className="w-full flex flex-col items-center bg-slate-950/95 dark:bg-phase-darkCard/95 border-t border-slate-700/80 backdrop-blur-xl px-1.5 py-1.5 sm:px-4 sm:py-2 rounded-t-2xl sm:rounded-t-3xl shadow-2xl transition-all flex-shrink-0">
       {/* Rule Notice if holding a card drawn this turn */}
       {isMyTurn && canPlayOrDiscard && restrictedCardId && cards.length > 1 && (
         <div className="mb-1 text-[10px] sm:text-xs text-amber-300 font-bold bg-amber-950/70 px-3 py-1 rounded-full border border-amber-500/50 flex items-center gap-1.5 animate-fadeIn shadow-md">
@@ -152,6 +172,9 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
             <span className="hidden xs:inline">{t.sortByColor}</span>
             <span className="xs:hidden">{isRTL ? 'لون' : 'Col'}</span>
           </button>
+          <span className="text-[10px] sm:text-xs text-slate-400 font-bold px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
+            {cards.length} {isRTL ? 'أوراق' : 'cards'}
+          </span>
         </div>
 
         {/* Action Buttons for Selected Cards */}
@@ -226,22 +249,37 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
         </div>
       </div>
 
-      {/* Responsive Hand Cards Row: Fits 100% of cards on Desktop screens without horizontal scroll */}
-      <div className="w-full max-w-6xl xl:max-w-7xl flex items-center justify-start md:justify-center overflow-x-auto md:overflow-x-visible py-2 sm:py-3 px-3 sm:px-6 scrollbar-thin scrollbar-thumb-slate-700 overscroll-x-contain">
-        <div className={`flex items-center justify-start md:justify-center transition-all ${
-          sortedCards.length > 10 
-            ? 'gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5' 
-            : 'gap-1.5 sm:gap-2 md:gap-3'
-        }`}>
+      {/* Realistic Stacked / Overlapping Hand Cards (Always fits 100% within screen, no scroll needed) */}
+      <div className="w-full max-w-5xl flex items-center justify-center pt-5 pb-2 px-2 sm:px-4 overflow-visible">
+        <div className="flex items-center justify-center relative select-none">
           {sortedCards.map((card, idx) => {
             const isSelected = selectedCardIds.has(card.id);
+            const isHovered = hoveredCardId === card.id;
             const isCardRestricted = isMyTurn && canPlayOrDiscard && !!restrictedCardId && card.id === restrictedCardId && cards.length > 1;
 
+            const offset = idx - midIndex;
+            const baseRotation = sortedCards.length > 4 && !isHovered && !isSelected
+              ? Math.max(-5, Math.min(5, (offset / midIndex) * 3))
+              : 0;
+            const baseArcY = sortedCards.length > 4 && !isHovered && !isSelected
+              ? Math.abs(offset) * 1.2
+              : 0;
+
+            const overlapClass = getOverlapMarginClass(idx);
+
             return (
-              <div 
-                key={card.id} 
-                className="flex-shrink-0 transition-all duration-200 hover:z-30 hover:-translate-y-3 sm:hover:-translate-y-5"
-                style={{ zIndex: isSelected ? 40 : idx + 1 }}
+              <div
+                key={card.id}
+                onMouseEnter={() => setHoveredCardId(card.id)}
+                onMouseLeave={() => setHoveredCardId(null)}
+                className={`flex-shrink-0 transition-all duration-200 ${overlapClass}`}
+                style={{
+                  zIndex: isHovered ? 55 : isSelected ? 45 : idx + 1,
+                  transform: isHovered || isSelected
+                    ? 'translateY(-28px) scale(1.1)'
+                    : `translateY(${baseArcY}px) rotate(${baseRotation}deg)`,
+                  transformOrigin: 'bottom center'
+                }}
               >
                 <CardView
                   card={card}

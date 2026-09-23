@@ -17,6 +17,7 @@ import { ScoreboardModal } from './components/ScoreboardModal';
 import { EmojiReactions } from './components/EmojiReactions';
 import { RoundMilestoneBanner } from './components/RoundMilestoneBanner';
 import { TableThemeModal } from './components/TableThemeModal';
+import { OpponentSeat } from './components/OpponentSeat';
 import { Trophy, RefreshCw, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -153,6 +154,16 @@ export const App: React.FC = () => {
   const myPlayer = gameState?.players.find((p) => p.id === myPlayerId) || players.find((p) => p.id === myPlayerId);
   const isHost = myPlayer?.isHost || false;
   const isMyTurn = gameState ? gameState.players[gameState.activePlayerIndex]?.id === myPlayerId : false;
+
+  const opponents = (gameState?.players || []).filter((p) => p.id !== myPlayerId);
+  const activePlayer = gameState ? gameState.players[gameState.activePlayerIndex] : undefined;
+  const leftOpponent = opponents.length >= 2 ? opponents[0] : null;
+  const rightOpponent = opponents.length >= 2 ? opponents[opponents.length - 1] : null;
+  const topOpponents = opponents.length === 1
+    ? [opponents[0]]
+    : opponents.length > 2
+    ? opponents.slice(1, -1)
+    : [];
 
   // --- ACTIONS ---
 
@@ -376,22 +387,32 @@ export const App: React.FC = () => {
           </div>
         ) : (
           // In-Game Active Table Screen (Fits 100% of mobile & desktop viewport with Casino Table Rail)
+          // In-Game Active Table Screen (Fits 100% of mobile & desktop viewport with Stadium Casino Table Rail)
           <div className="w-full h-full flex flex-col items-center justify-between relative max-w-7xl py-0.5 px-1 sm:px-3 overflow-hidden min-h-0 casino-table-rail rounded-2xl sm:rounded-3xl m-0.5 sm:m-1">
-            {/* Opponents Top Bar (Safe horizontal scroll with left/right padding) */}
-            <div className="w-full flex-shrink-0 flex items-center justify-start md:justify-center gap-2.5 sm:gap-4 py-1 px-3 overflow-x-auto scrollbar-none overscroll-x-contain">
-              {(gameState.players || []).map((p, pIdx) => {
-                const isCurrentTurn = gameState.activePlayerIndex === pIdx;
+            {/* Mobile Opponents Row (< md screens) */}
+            <div className="w-full flex md:hidden flex-shrink-0 items-center justify-center gap-2 py-1 px-2 overflow-x-auto scrollbar-none overscroll-x-contain">
+              {opponents.map((p) => (
+                <OpponentSeat
+                  key={p.id}
+                  player={p}
+                  isActive={activePlayer?.id === p.id}
+                />
+              ))}
+            </div>
 
-                return (
-                  <PlayerAvatar
+            {/* Desktop Top Opponents (md+ screens) */}
+            {topOpponents.length > 0 && (
+              <div className="hidden md:flex flex-shrink-0 items-center justify-center gap-6 py-1 z-20">
+                {topOpponents.map((p) => (
+                  <OpponentSeat
                     key={p.id}
                     player={p}
-                    isActive={isCurrentTurn}
-                    isMe={p.id === myPlayerId}
+                    isActive={activePlayer?.id === p.id}
+                    position="top"
                   />
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Estimation & Phase 10 World Tour Style Round Milestone Banner */}
             <RoundMilestoneBanner
@@ -400,24 +421,49 @@ export const App: React.FC = () => {
               onOpenPhaseGuide={() => setIsPhaseGuideOpen(true)}
             />
 
-            {/* Scrollable Center Game Arena: Decks + Table Laid Phases */}
-            <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center justify-start gap-1 py-0.5 px-1 sm:px-2 scrollbar-thin scrollbar-thumb-slate-700">
-              {/* Table Center (Draw Deck & Discard Pile) */}
-              <TableCenter
-                gameState={gameState}
-                myPlayerId={myPlayerId}
-                selectedCardId={selectedHitCardId}
-                onDraw={handleDraw}
-                onDiscard={handleDiscard}
-              />
+            {/* Stadium Arena Center: Left Opponent + Center Playfield + Right Opponent */}
+            <div className="flex-1 w-full min-h-0 flex items-center justify-between gap-1 sm:gap-4 px-1 sm:px-3 overflow-hidden relative">
+              {/* Left Flank Opponent (Desktop) */}
+              {leftOpponent && (
+                <div className="hidden md:flex flex-col items-center justify-center z-20 flex-shrink-0 animate-fadeIn">
+                  <OpponentSeat
+                    player={leftOpponent}
+                    isActive={activePlayer?.id === leftOpponent.id}
+                    position="left"
+                  />
+                </div>
+              )}
 
-              {/* Laid Phases on Table */}
-              <LaidPhasesView
-                gameState={gameState}
-                myPlayerId={myPlayerId}
-                selectedCardId={selectedHitCardId}
-                onHitPhase={handleHitPhase}
-              />
+              {/* Scrollable Center Game Arena: Decks + Table Laid Phases */}
+              <div className="flex-1 h-full min-h-0 overflow-y-auto flex flex-col items-center justify-start gap-1 py-0.5 px-1 sm:px-2 scrollbar-thin scrollbar-thumb-slate-700">
+                {/* Table Center (Draw Deck & Discard Pile) */}
+                <TableCenter
+                  gameState={gameState}
+                  myPlayerId={myPlayerId}
+                  selectedCardId={selectedHitCardId}
+                  onDraw={handleDraw}
+                  onDiscard={handleDiscard}
+                />
+
+                {/* Laid Phases on Table */}
+                <LaidPhasesView
+                  gameState={gameState}
+                  myPlayerId={myPlayerId}
+                  selectedCardId={selectedHitCardId}
+                  onHitPhase={handleHitPhase}
+                />
+              </div>
+
+              {/* Right Flank Opponent (Desktop) */}
+              {rightOpponent && (
+                <div className="hidden md:flex flex-col items-center justify-center z-20 flex-shrink-0 animate-fadeIn">
+                  <OpponentSeat
+                    player={rightOpponent}
+                    isActive={activePlayer?.id === rightOpponent.id}
+                    position="right"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Floating Quick Emoji Reaction Button (Pinned neatly above Hand) */}
@@ -425,7 +471,7 @@ export const App: React.FC = () => {
               <EmojiReactions onSendEmoji={handleSendEmoji} />
             </div>
 
-            {/* Active Player's Hand (Pinned to Bottom, Desktop Auto-Fit & 100% visible) */}
+            {/* Active Player's Hand (Pinned to Bottom, Overlapping Cards & 100% visible) */}
             {myPlayer && (
               <div className="w-full flex-shrink-0">
                 <PlayerHand

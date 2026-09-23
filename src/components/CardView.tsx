@@ -37,10 +37,10 @@ export const CardView: React.FC<CardViewProps> = ({
       <div
         className={`relative rounded-xl border border-blue-400/40 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 shadow-xl flex items-center justify-center select-none transition-all duration-200 overflow-hidden ${
           mini
-            ? 'w-7 h-10 sm:w-9 sm:h-13'
+            ? 'w-8 sm:w-9 aspect-[5/7]'
             : small
-            ? 'w-10 h-15 sm:w-13 sm:h-19'
-            : 'w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28'
+            ? 'w-11 sm:w-13 aspect-[5/7]'
+            : 'w-14 sm:w-16 md:w-20 lg:w-22 aspect-[5/7]'
         }`}
         style={{
           boxShadow: selected
@@ -175,16 +175,16 @@ export const CardView: React.FC<CardViewProps> = ({
       onDoubleClick={!disabled ? onDoubleClick : undefined}
       className={`relative rounded-xl select-none cursor-pointer flex-shrink-0 transition-all duration-200 ${
         mini
-          ? 'w-7 h-10 sm:w-9 sm:h-13 p-0.5'
+          ? 'w-8 sm:w-9 aspect-[5/7] p-0.5'
           : small
-          ? 'w-10 h-15 sm:w-13 sm:h-19 p-1'
-          : 'w-13 h-18 sm:w-16 sm:h-23 md:w-20 md:h-28 p-1 sm:p-1.5'
+          ? 'w-11 sm:w-13 aspect-[5/7] p-0.5 sm:p-1'
+          : 'w-14 sm:w-16 md:w-20 lg:w-22 aspect-[5/7] p-1 sm:p-1.5'
       } ${style.bgGradient} border ${style.cardBorder} ${
         selected
-          ? '-translate-y-3 sm:-translate-y-4 ring-2 sm:ring-4 ring-white shadow-2xl scale-105 z-30 ' + style.glow
+          ? '-translate-y-5 sm:-translate-y-7 ring-3 sm:ring-4 ring-white shadow-2xl scale-105 sm:scale-110 z-40 ' + style.glow
           : isRestricted
-          ? 'ring-2 sm:ring-3 ring-amber-500/80 shadow-lg shadow-amber-500/30 hover:-translate-y-2'
-          : 'hover:-translate-y-2 hover:shadow-xl'
+          ? 'ring-2 sm:ring-3 ring-amber-500/90 shadow-lg shadow-amber-500/30 hover:-translate-y-4'
+          : 'hover:-translate-y-4 sm:hover:-translate-y-6 hover:shadow-2xl hover:scale-105'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
       style={{
         boxShadow: selected
@@ -218,11 +218,11 @@ export const CardView: React.FC<CardViewProps> = ({
           </div>
         )}
 
-        {/* Top-Left Corner Index */}
-        <div className="flex items-center justify-between leading-none z-10">
+        {/* Top-Left Corner Index (High Visibility for Overlapping Hand) */}
+        <div className="flex items-center gap-1 leading-none z-10">
           <span
             className={`font-black tracking-tight leading-none ${style.text} ${
-              mini ? 'text-[8px]' : small ? 'text-[10px] sm:text-xs' : 'text-xs sm:text-sm'
+              mini ? 'text-[9px]' : small ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm md:text-base'
             }`}
           >
             {card.type === 'WILD' ? (
@@ -235,6 +235,12 @@ export const CardView: React.FC<CardViewProps> = ({
               renderNumberWithUnderline(card.value, true)
             )}
           </span>
+          {!mini && card.type === 'NUMBER' && (
+            <span
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0 shadow-xs"
+              style={{ backgroundColor: style.accent }}
+            />
+          )}
         </div>
 
         {/* Center Large Value / Symbol Display */}

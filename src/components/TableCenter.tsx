@@ -96,12 +96,15 @@ export const TableCenter: React.FC<TableCenterProps> = ({
           <div
             onClick={handleDrawFromPile}
             className={`relative group transition-all duration-200 ${
-              canDraw ? 'cursor-pointer hover:scale-108 active:scale-95' : 'opacity-90'
+              canDraw ? 'cursor-pointer hover:scale-105 active:scale-95' : 'opacity-90'
             }`}
           >
+            {/* Printed Felt Slot Box Behind Deck */}
+            <div className="absolute -inset-1 rounded-2xl border-2 border-dashed border-cyan-400/30 flex items-center justify-center pointer-events-none"></div>
+
             {/* Multi-layered 3D Card Stack Base */}
-            <div className="absolute top-2 left-2 w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28 rounded-xl bg-slate-900 border border-slate-700 shadow-md"></div>
-            <div className="absolute top-1 left-1 w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28 rounded-xl bg-blue-950 border border-blue-800 shadow-md"></div>
+            <div className="absolute top-2 left-1.5 w-14 sm:w-16 md:w-20 lg:w-22 aspect-[5/7] rounded-xl bg-slate-950 border border-slate-700 shadow-md"></div>
+            <div className="absolute top-1 left-0.5 w-14 sm:w-16 md:w-20 lg:w-22 aspect-[5/7] rounded-xl bg-blue-950 border border-blue-800 shadow-md"></div>
 
             <div className="relative z-10">
               <CardView faceDown={true} />
@@ -130,16 +133,19 @@ export const TableCenter: React.FC<TableCenterProps> = ({
             onClick={handleDiscardPileClick}
             className={`relative group transition-all duration-200 ${
               canDraw && topDiscard?.type !== 'SKIP'
-                ? 'cursor-pointer hover:scale-108 active:scale-95'
+                ? 'cursor-pointer hover:scale-105 active:scale-95'
                 : canDiscardOnPile
-                ? 'cursor-pointer hover:scale-108 active:scale-95 ring-3 ring-red-500 rounded-xl'
+                ? 'cursor-pointer hover:scale-105 active:scale-95 ring-4 ring-red-500 rounded-xl animate-pulse'
                 : 'opacity-90'
             }`}
           >
+            {/* Printed Felt Slot Box Behind Discard */}
+            <div className="absolute -inset-1 rounded-2xl border-2 border-dashed border-red-400/30 flex items-center justify-center pointer-events-none"></div>
+
             {topDiscard ? (
               <CardView card={topDiscard} />
             ) : (
-              <div className="w-12 h-17 sm:w-16 sm:h-23 md:w-20 md:h-28 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center bg-slate-900/60 text-slate-500 font-bold text-xs">
+              <div className="w-14 sm:w-16 md:w-20 lg:w-22 aspect-[5/7] rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center bg-slate-900/60 text-slate-500 font-bold text-xs">
                 Empty
               </div>
             )}
@@ -159,7 +165,7 @@ export const TableCenter: React.FC<TableCenterProps> = ({
             {canDiscardOnPile ? (
               <span className="text-red-400 font-black animate-pulse flex items-center gap-1">
                 <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                <span>{isRTL ? 'اضغط هنا للإرمي' : 'Tap here to Discard'}</span>
+                <span>{isRTL ? 'إرمي هنا لإنهاء الدور' : 'Tap to Discard'}</span>
               </span>
             ) : (
               t.drawFromDiscard
